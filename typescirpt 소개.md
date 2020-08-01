@@ -631,3 +631,504 @@ const myDog = new Dog();
 myDog.makeSound();
 myDog.move();
 ```
+
+# TypeScript Interface
+
+## 1. Introduction
+주로 타입의 체크를 위해서 사용되어지며, 변수 함수 클래스에 사용한다. 인터페이스는 여러타입을 가지고 있는 프로퍼티로,
+새로운 타입을 정의하는 것과 유사하다. 인터페이스로 선언되어진 프로퍼티는 메소드 구현의 강제로 일관성을 유지할 수 있도록 한다.
+TypeScript는 인터페이스를 지원한다. 
+
+클래스와 같이 프로퍼티와 메소드를 가질 수 있다는 점에서 유사하지만, 직접 인스턴스 생성을 할 수 없음에 그 차이가 있고, 모든 메소드들은 추상메서드로 구현된다.
+
+## 2. 변수와 인터페이스
+
+인터페이스는 변수의 타입으로써 사용되어질 수 있다. 이때 인터페이스를 타입으로 선언한 변수는 해당 인터페이스를 준수하여야 한다. 새로운 타입을 정의하는 것과 같다.
+
+```js
+// 인터페이스의 정의
+interface Todo {
+  id: number;
+  content: string;
+  completed: boolean;
+}
+
+// 변수 todo의 타입으로 Todo 인터페이스를 선언하였다.
+let todo: Todo;
+
+// 변수 todo는 Todo 인터페이스를 준수하여야 한다.
+todo = { id: 1, content: 'typescript', completed: false };
+```
+
+인터페이스를 사용하여 함수 파라미터의 타입을 선언할 수 있다. 이때 해당 함수에는 함수 파라미터의 타입으로 지정한 인터페이스를 준수하는 인수를 전달하여야 한다. 함수에 객체를 전달할 때 복잡한 매개변수 체크가 필요없어서 매우 유용하다.
+
+```js
+// 인터페이스의 정의
+interface Todo {
+  id: number;
+  content: string;
+  completed: boolean;
+}
+
+let todos: Todo[] = [];
+
+// 파라미터 todo의 타입으로 Todo 인터페이스를 선언하였다.
+                //  이부분 //
+function addTodo(todo: Todo) {
+  todos = [...todos, todo];
+}
+
+// 파라미터 todo는 Todo 인터페이스를 준수하여야 한다.
+const newTodo: Todo = { id: 1, content: 'typescript', completed: false };
+addTodo(newTodo);
+console.log(todos)
+// [ { id: 1, content: 'typescript', completed: false } ]
+```
+
+## 3.함수와 인터페이스
+
+인터페이스는 함수의 타입으로 사용할 수 있다. 이때 함수의 인터페이스에는 타입이 선언된 파라미터 리스트와 리턴 타입을 정의한다. 함수 인테페이스를 구현하는 함수는 인터페이스를 준수하여야 한다.
+
+```js
+// 함수 인터페이스의 정의
+interface SquareFunc {
+  (num: number): number;
+}
+
+// 함수 인테페이스를 구현하는 함수는 인터페이스를 준수하여야 한다.
+const squareFunc: SquareFunc = function (num: number) {
+  return num * num;
+}
+
+console.log(squareFunc(10)); // 100
+```
+
+## 4.클래스와 인터페이스
+
+클래스 선언문의  implements뒤에 인터페이스를 선언시에, __해당 클래스는 지정된 인터페이스를 반드시 구현하여야 한다.__
+이는 인터페이스를 구현하는 클래스의 일관성을 유지할 수 있는 장점을 지닌다.
+
+```ts
+// 인터페이스의 정의
+interface ITodo {
+  id: number;
+  content: string;
+  completed: boolean;
+}
+
+// Todo 클래스는 ITodo 인터페이스를 구현하여야 한다.
+class Todo implements ITodo {
+  // 필수 구현 파트
+  constructor (
+    public id: number,
+    public content: string,
+    public completed: boolean
+  ) { }
+}
+
+const todo = new Todo(1, 'Typescript', false);
+
+console.log(todo);
+```
+
+인터페이스는 프로퍼티뿐만 아니라 메소드도 포함할 수 있다. 단, 모든 메소드는 추상 메소드이어야 한다. 인터페이스를 구현하는 클래스는 인터페이스에서 정의한 프로퍼티와 추상 메소드를 반드시 구현하여야 한다.
+
+```ts
+// 인터페이스의 정의
+interface IPerson {
+  name: string;
+  sayHello(): void;
+}
+
+/*
+인터페이스를 구현하는 클래스는 인터페이스에서 정의한 프로퍼티와 추상 메소드를 반드시 구현하여야 한다.
+*/
+class Person implements IPerson {
+  // 인터페이스에서 정의한 프로퍼티의 구현
+  constructor(public name: string) {}
+
+  // 인터페이스에서 정의한 추상 메소드의 구현
+  sayHello() {
+    console.log(`Hello ${this.name}`);
+  }
+}
+
+function greeter(person: IPerson): void {
+  person.sayHello();
+}
+
+const me = new Person('Lee');
+greeter(me); // Hello Lee
+```
+
+## 5. 덕타이핑
+주의해야 할 것은 인터페이스를 구현하였다는 것만이 타입 체크를 통과하는 유일한 방법은 아니다. 타입 체크에서 중요한 것은 값을 실제로 가지고 있는 것이다. 이해가 어려울 수 있으므로 예를 들어 설명한다.
+
+```js
+interface IDuck { // 1
+  //리턴값의 설정 : void  
+  quack(): void; //해당 메소드를 Redhead쪽에서도 가지고 있다.
+}
+
+class MallardDuck implements IDuck { // 3
+  quack() {
+    console.log('Quack!');
+  }
+}
+
+//IDuck인스턴스가 구현되어져 있지는 않다.
+class RedheadDuck { // 4
+  quack() {
+    console.log('q~uack!');
+  }
+}
+
+function makeNoise(duck: IDuck): void { // 2
+  duck.quack();
+}
+
+makeNoise(new MallardDuck()); // Quack!
+makeNoise(new RedheadDuck()); // q~uack! // 5
+```
+(1) 인터페이스 IDuck은 quack메소드를 정의했다.
+(2) makeNoise 함수는 인터페이스 IDuck을 구현한 클래스의 인스턴스 duck을 인자로 받는다.
+(3) 클래스 MallardDuck은 인터페이스 IDuck을 구현하였다.
+(4) 클래스 RedheadDuck은 인터페이스 IDuck을 구현하지는 않지만, 자체적으로 quack메소드를 가지고 있다.
+(5) makeNoise 함수 인터페이스 IDuck을 구현하지 않은 클래스 RedheadDuck의 인스턴스를 인자로 전달하여도 에러가 없이 처리된다.
+
+TypeScript는 해당 인터페이스에서 정의한 프로퍼티나 메소드를 가지고 있다면 그 인터페이스를 구현한 것으로 인정한다. 이것을 덕 타이핑(duck typing) 또는 구조적 타이핑(structural typing)이라 한다.
+
+인터페이스를 변수에 사용할 경우에도 덕 타이핑은 적용된다. (해당 변수를 가지고 있으면 덕타이핑이 적용된다.)
+
+```ts
+interface IPerson {
+  name: string;
+}
+
+function sayHello(person: IPerson): void {
+  console.log(`Hello ${person.name}`);
+}
+
+//인터페이스에 있는 필드를 사용하여, 덕 타이핑이 실행되었다. (interface에 name을 사용.)
+const me = { name: 'Lee', age: 18 };
+sayHello(me); // Hello Lee
+```
+
+변수 me는 인터페이스 IPerson과 일치하지는 않는다. 하지만 IPerson의 name 프로퍼티를 가지고 있으면 인터페이스에 __부합__ 하는 것으로 인정된다.
+
+인터페이스는 개발 단계에서 도움을 주기 위해 제공되는 기능으로 자바스크립트의 표준이 아니다. 따라서 위 예제의 TypeScript 파일을 자바스크립트 파일로 트랜스파일링하면 아래와 같이 인터페이스가 삭제된다.
+
+```js
+function sayHello(person) {
+  console.log("Hello " + person.name);
+}
+var me = { name: 'Lee', age: 18 };
+sayHello(me); // Hello Lee
+```
+
+## 6. 선택적 프로퍼티
+인터페이스의 프로퍼티는 반드시 구현되어져야 하지만, 이를 선택적으로 하여 옵셔널하게 사용할수도 있다.
+프로퍼티 명의 뒤에 ?를 붙이는 것이다.
+
+```ts
+interface UserInfo {
+  username: string;
+  password: string;
+  //선택적 프로퍼티의 활용
+  age?    : number;
+  address?: string;
+}
+
+const userInfo: UserInfo = {
+  username: 'ungmo2@gmail.com',
+  password: '123456'
+}
+
+console.log(userInfo);
+```
+
+## 7. 인터페이스의 상속
+
+인터페이스는 extends 키워드를 사용하여 인터페이스 또는 클래스를 상속받을 수 있다.
+```ts
+interface Person {
+  name: string;
+  age?: number;
+}
+
+//인터페이스의 상속
+interface Student extends Person {
+  grade: number;
+}
+
+//인스턴스의 구현
+const student: Student =  {
+  name: 'Lee',
+  age: 20,
+  grade: 3
+}
+```
+
+복수의 인터페이스를 상속받을 수도 있다.
+
+```ts
+interface Person {
+  name: string;
+  age?: number;
+}
+
+interface Developer {
+  skills: string[];
+}
+
+//인터페이스 더블 상속
+interface WebDeveloper extends Person, Developer {}
+
+const webDeveloper: WebDeveloper =  {
+  name: 'Lee',
+  age: 20,
+  skills: ['HTML', 'CSS', 'JavaScript']
+}
+```
+
+인터페이스는 인터페이스 뿐만 아니라 클래스도 상속받을 수 있다. 단, 클래스의 모든 멤버(public, protected, private)가 상속되지만 구현까지 상속하지는 않는다.
+```ts
+class Person {
+  constructor(public name: string, public age: number) {}
+}
+
+interface Developer extends Person {
+  skills: string[];
+}
+
+const developer: Developer =  {
+  name: 'Lee',
+  age: 20,
+  skills: ['HTML', 'CSS', 'JavaScript']
+}
+```
+
+# Type Alias
+
+타입 앨리어스는 새로운 타입을 정의한다. 타입으로 사용할 수 있다는 점에서 타입 앨리어스는 인터페이스와 유사하다.
+인터페이스는 아래와 같이 타입으로 사용할 수 있다.
+
+```ts
+interface Person {
+  name: string,
+  age?: number
+}
+
+// 빈 객체를 Person 타입으로 지정
+const person = {} as Person;
+person.name = 'Lee';
+person.age = 20;
+person.address = 'Seoul'; // Error
+```
+
+타입 앨리어스도 인터페이스와 마찬가지로 타입으로 사용할 수 있다.
+* alias : 가명으로 알려진, 일컬어지는...
+
+```ts
+// 타입 앨리어스
+type Person = {
+  name: string,
+  age?: number
+}
+
+// 빈 객체를 Person 타입으로 지정
+const person = {} as Person;
+person.name = 'Lee';
+person.age = 20;
+person.address = 'Seoul'; // Error
+```
+
+하지만 타입 앨리어스는 원시값, 유니온 타입, 튜플 등도 타입으로 지정할 수 있다.
+
+```ts
+// 문자열 리터럴로 타입 지정
+type Str = 'Lee';
+
+// 유니온 타입으로 타입 지정
+type Union = string | null;
+
+// 문자열 유니온 타입으로 타입 지정
+type Name = 'Lee' | 'Kim';
+
+// 숫자 리터럴 유니온 타입으로 타입 지정
+type Num = 1 | 2 | 3 | 4 | 5;
+
+// 객체 리터럴 유니온 타입으로 타입 지정
+type Obj = {a: 1} | {b: 2};
+
+// 함수 유니온 타입으로 타입 지정
+type Func = (() => string) | (() => void);
+
+// 인터페이스 유니온 타입으로 타입 지정
+type Shape = Square | Rectangle | Circle;
+
+// 튜플로 타입 지정
+type Tuple = [string, boolean];
+const t: Tuple = ['', '']; // Error
+```
+
+인터페이스는 extends 또는 implements될 수 있지만 타입 앨리어스는 extends 또는 implements될 수 없다. 즉, 상속을 통해 확장이 필요하다면 타입 앨리어스보다는 인터페이스가 유리하다. 하지만 인터페이스로 표현할 수 없거나 유니온 또는 튜플을 사용해야한다면 타입 앨리어스를 사용한는 편이 유리하다.
+
+# TypeScript-Generic
+
+Java나 C# 같은 정적 타입 언어의 경우, 함수 또는 클래스를 정의하는 시점에 매개변수나 반환값의 타입을 선언하여야 한다. TypeScript 또한 정적 타입 언어이기 때문에 함수 또는 클래스를 정의하는 시점에 매개변수나 반환값의 타입을 선언하여야 한다. 그런데 함수 또는 클래스를 정의하는 시점에 매개변수나 반환값의 타입을 선언하기 어려운 경우가 있다.
+아래의 예제를 살펴보자. FIFO(First In First Out) 구조로 데이터를 저장하는 큐를 표현한 것이다.
+
+```ts
+class Queue {
+  protected data = []; // data: any[]
+
+  push(item) {
+    this.data.push(item);
+  }
+
+  pop() {
+    return this.data.shift();
+  }
+}
+
+const queue = new Queue();
+
+queue.push(0);
+queue.push('1'); // 의도하지 않은 실수!
+
+console.log(queue.pop().toFixed()); // 0
+console.log(queue.pop().toFixed()); // Runtime error
+```
+
+Queue 클래스 데이터의 프로퍼티는 타입에 대한선언이 생략되어져, any[]타입이 된다. 
+이럴경우 any에 들어가는 타입이 다른 경우가 생긴다. 위 예제의 경우, data프로퍼티가 
+number 타입만을 포함하는 배열이라는 기대 하에 각 요소에 대해서, Number.prototype.toFixed를 사용한다.
+그렇기 때문에 number타입의 요소가 아닌경우 런타임 에러를 일으킨다.
+
+위와 같은 문제를 해결하기 위해 Queue 클래스를 상속하여 number 타입 전용 NumberQueue 클래스를 정의할 수 있다.
+
+```ts
+class Queue {
+  protected data = []; // data: any[]
+
+  push(item) {
+    this.data.push(item);
+  }
+
+  pop() {
+    return this.data.shift();
+  }
+}
+
+// Queue 클래스를 상속하여 number 타입 전용 NumberQueue 클래스를 정의
+class NumberQueue extends Queue {
+
+  // number 타입의 요소만을 push한다. 1차 검증 방법을 추가한다.
+  push(item: number) {
+    super.push(item);
+  }
+
+  pop(): number {
+    return super.pop();
+  }
+}
+
+const queue = new NumberQueue();
+
+queue.push(0);
+// 의도하지 않은 실수를 사전 검출 가능
+// [ts] Argument of type '"1"' is not assignable to parameter of type 'number'.
+// queue.push('1');
+queue.push(+'1'); // 실수를 사전 인지하고 수정할 수 있다
+
+console.log(queue.pop().toFixed()); // 0
+console.log(queue.pop().toFixed()); // 1
+```
+
+이와 같이 number 타입 전용 NumberQueue 클래스를 정의하면 number 타입 이외의 요소가 추가(push)되었을 때, 아래와 같이 런타임 이전에 에러를 사전 감지할 수 있다.
+
+// [ts] Argument of type '"1"' is not assignable to parameter of type 'number'.
+// queue.push('1');
+
+하지만 다양한 타입을 지원해야 한다면 타입 별로 클래스를 상속받아 추가해야 하므로 이 또한 좋은 방법은 아니다. 제네릭을 사용하여 이 문제를 해결하여 보자.
+generic : 포괄적인, 총칭의
+
+```ts
+// T는 제네릭을 선언할 때 관용적으로 사용되는 식별자로 타입 파라미터(Type parameter)라 한다. T는 Type의 약자로 반드시 T를 사용하여야 하는 것은 아니다.
+class Queue<T> {
+  protected data: Array<T> = [];
+  push(item: T) {
+    this.data.push(item);
+  }
+  pop(): T {
+    return this.data.shift();
+  }
+}
+
+// number 전용 Queue 
+const numberQueue = new Queue<number>();
+
+numberQueue.push(0);
+// numberQueue.push('1'); // 의도하지 않은 실수를 사전 검출 가능
+numberQueue.push(+'1');   // 실수를 사전 인지하고 수정할 수 있다
+
+console.log(numberQueue.pop().toFixed()); // 0
+console.log(numberQueue.pop().toFixed()); // 1
+
+// string 전용 Queue 인스턴스를 탄력적으로 바꾸 수있다.
+const stringQueue = new Queue<string>();
+
+stringQueue.push('Hello');
+stringQueue.push('World');
+
+console.log(stringQueue.pop().toUpperCase()); // HELLO
+console.log(stringQueue.pop().toUpperCase()); // WORLD
+
+// 커스텀 객체 전용 Queue
+const myQueue = new Queue<{name: string, age: number}>();
+myQueue.push({name: 'Lee', age: 10});
+myQueue.push({name: 'Kim', age: 20});
+
+console.log(myQueue.pop()); // { name: 'Lee', age: 10 }
+console.log(myQueue.pop()); // { name: 'Kim', age: 20 }
+```
+
+제네릭은 선언 시점이 아니라 생성 시점에 타입을 명시하여 하나의 타입만이 아닌 다양한 타입을 사용할 수 있도록 하는 기법이다. 한 번의 선언으로 다양한 타입에 재사용이 가능하다는 장점이 있다.
+
+T는 제네릭을 선언할 때 관용적으로 사용되는 식별자로 타입 파라미터(Type parameter)라 한다. T는 Type의 약자로 반드시 T를 사용하여야 하는 것은 아니다.
+
+또한 함수에도 제네릭을 사용할 수 있다. 제네릭을 사용하면 하나의 타입만이 아닌 다양한 타입의 매개변수와 리턴값을 사용할 수 있다. 아래 예제를 살펴보자.
+
+```ts
+//                  프로퍼티 명 : T속성[] : T[]리턴값
+function reverse<T>(items: T[]): T[] {
+  return items.reverse();
+}
+```
+
+reverse 함수는 인수의 타입에 의해 타입 매개변수가 결정된다. Reverse 함수는 다양한 타입의 요소로 구성된 배열을 인자로 전달받는다. 예를 들어 number 타입의 요소를 갖는 배열을 전달받으면 타입 매개변수는 number가 된다.
+
+```ts
+function reverse<T>(items: T[]): T[] {
+  return items.reverse();
+}
+
+const arg = [1, 2, 3, 4, 5];
+// 인수에 의해 타입 매개변수가 결정된다.
+const reversed = reverse(arg);
+console.log(reversed); // [ 5, 4, 3, 2, 1 ]
+```
+
+만약 {name: string} 타입의 요소를 갖는 배열을 전달받으면 타입 매개변수는 {name: string}가 된다.
+
+```ts
+function reverse<T>(items: T[]): T[] {
+  return items.reverse();
+}
+
+const arg = [{ name: 'Lee' }, { name: 'Kim' }];
+// 인수에 의해 타입 매개변수가 결정된다.
+const reversed = reverse(arg);
+console.log(reversed); // [ { name: 'Kim' }, { name: 'Lee' } ]
+```
